@@ -209,7 +209,7 @@ function defaultState(){
       bath:[{id:'bath',r:2,c:3},{id:'mirror',r:0,c:1}],
       wc:[{id:'toilet',r:2,c:3}],
       hall:[],balcony:[]},
-    pet:null,petRoom:'living',home:null,homes:[],
+    pet:null,bird:null,petRoom:'living',home:null,homes:[],
     wear:{m:{},d:{}},skills:{},
     rel:{love:5,mM:70,mD:70,day:t,cnt:{},events:{}},
     daily:{last:null,streak:0},dq:{date:t,p:{},c:{}},ach:{},
@@ -275,6 +275,7 @@ function rollDay(){
   S.clean=Math.max(10,S.clean-15*gap);
   S.rel.mM=Math.max(35,S.rel.mM-4*gap);S.rel.mD=Math.max(35,S.rel.mD-4*gap);
   S.stats.walksDay=0;
+  if(S.bird){const b=S.bird;b.hunger=Math.max(20,b.hunger-18*gap);b.water=Math.max(15,b.water-20*gap);b.beak=Math.max(20,b.beak-10*gap);b.happy=Math.max(30,b.happy-7*gap)}
   if(S.pet){const p=S.pet;p.hunger=Math.max(20,p.hunger-22*gap);p.happy=Math.max(30,p.happy-8*gap);p.clean=Math.max(25,p.clean-12*gap)}
   save();return true;
 }
@@ -379,6 +380,7 @@ const BREEDS={
   shiba:{n:'Сиба-ину',c:['#eaa05c','#f2bf8a','#cf8140'],belly:'#fff1de',ear:'pointy'},
   husky:{n:'Хаски',c:['#9aa5b5','#c4ccd8','#6f7a8c'],belly:'#fff',ear:'pointy',mask:1},
   pug:{n:'Мопс',c:['#e6c79a','#f0dcb8','#cba873'],belly:'#f6e8d0',ear:'floppy',face:'#4a3a35'},
+  chihuahua:{n:'Чихуахуа',c:['#e2b27a','#f5e3c8','#c99a63'],belly:'#f8ead6',ear:'big',short:1,tiny:1},
   dalm:{n:'Далматин',c:['#ffffff','#f6f2ee','#ebe6e0'],belly:'#fff',ear:'floppy',spots:1}
 };
 const COLLARS=['#ef6f93','#6fb3ef','#7fd18b','#f2c14e','#b18be8'];
@@ -393,12 +395,19 @@ function dogSvg(p,pose,size){
   const patch=B.patch?`<ellipse cx="42" cy="58" rx="12" ry="9" fill="${B.patch}"/><circle cx="70" cy="28" r="7" fill="${B.patch}"/>`:'';
   const mask=B.mask?'<path d="M62 32Q76 20 90 32L90 40Q76 34 62 40Z" fill="#59647a"/>':'';
   const earSvg=B.ear==='floppy'?`<ellipse cx="60" cy="38" rx="7" ry="13" fill="${ear}" transform="rotate(14 60 38)"/><ellipse cx="92" cy="34" rx="6" ry="11" fill="${ear}" transform="rotate(-16 92 34)"/>`
+    :B.ear==='big'?`<path d="M58 30L52 3L78 20Z" fill="${ear}"/><path d="M86 20L102 3L102 32Z" fill="${ear}"/><path d="M59 25L56 10L71 20Z" fill="#ffc9d1"/><path d="M90 21L98 10L98 27Z" fill="#ffc9d1"/>`
     :B.ear==='small'?`<path d="M62 24L66 10L76 20Z" fill="${ear}"/><path d="M86 20L94 10L98 26Z" fill="${ear}"/>`
     :`<path d="M60 26L62 4L76 18Z" fill="${ear}"/><path d="M88 18L98 4L100 28Z" fill="${ear}"/><path d="M64 20L65 10L72 17Z" fill="#ffc9d1"/>`;
   if(pose==='sleep'){
     return `<svg width="${sz}" height="${sz*.7}" viewBox="0 0 130 90"><path d="M20 62Q6 40 28 34" stroke="${body}" stroke-width="10" fill="none" stroke-linecap="round"/><ellipse cx="58" cy="64" rx="44" ry="22" fill="${body}"/><ellipse cx="60" cy="74" rx="26" ry="8" fill="${B.belly}" opacity=".6"/><circle cx="102" cy="64" r="17" fill="${body}"/><ellipse cx="116" cy="68" rx="9" ry="7" fill="${face}"/><circle cx="124" cy="66" r="3" fill="${dk}"/><path d="M96 60q4 3 8 0" stroke="${dk}" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="90" cy="54" rx="6" ry="10" fill="${ear}" transform="rotate(-20 90 54)"/><path d="M78 56Q92 80 106 78" stroke="${col}" stroke-width="5" fill="none"/>${spots?'<circle cx="46" cy="56" r="4" fill="#4a3a35"/><circle cx="64" cy="52" r="3" fill="#4a3a35"/>':''}</svg>`;
   }
   return `<svg width="${sz}" height="${sz*.85}" viewBox="0 0 120 100"><path d="M30 70Q${B.fluffy?4:12} 62 ${B.fluffy?10:16} 38" stroke="${body}" stroke-width="${B.fluffy?16:9}" fill="none" stroke-linecap="round"/><ellipse cx="48" cy="66" rx="26" ry="24" fill="${body}"/>${spots}${patch}<ellipse cx="38" cy="90" rx="13" ry="7" fill="${body}"/><rect x="60" y="66" width="11" height="${B.short?20:26}" rx="5.5" fill="${body}"/><ellipse cx="66" cy="${B.short?92:94}" rx="9" ry="4.5" fill="${B.belly}"/><ellipse cx="62" cy="64" rx="10" ry="16" fill="${B.belly}"/><circle cx="76" cy="38" r="20" fill="${body}"/>${mask}${earSvg}<ellipse cx="90" cy="44" rx="11" ry="8.5" fill="${face}"/><circle cx="99" cy="41" r="3.6" fill="${dk}"/><circle cx="80" cy="34" r="3.2" fill="${dk}"/><circle cx="81" cy="33" r="1" fill="#fff"/><path d="M88 49q4 4 8 0" stroke="${dk}" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M60 52Q76 62 92 52" stroke="${col}" stroke-width="5" fill="none"/><circle cx="76" cy="60" r="3" fill="#f2c14e"/>${accs}</svg>`;
+}
+
+const PARROTS=[{n:'Зелёный',b:'#5cc46a',w:'#3da34e',h:'#f2d84a'},{n:'Голубой',b:'#5ab4ef',w:'#3a8fd0',h:'#fff4c8'},{n:'Жёлтый',b:'#f6d84a',w:'#e6b92e',h:'#ffffff'},{n:'Розовый',b:'#f59bb8',w:'#e0708f',h:'#ffe2ec'}];
+function birdSvg(b,w){
+  const P=PARROTS[b.color||0],dk='#4a3330';
+  return `<svg width="${w||140}" height="${(w||140)*1.1}" viewBox="0 0 100 110"><path d="M18 120Q30 70 44 70L56 76Q40 100 36 124Z" fill="${P.w}"/><path d="M14 104L26 78L40 86Z" fill="${P.w}"/><ellipse cx="54" cy="66" rx="26" ry="32" fill="${P.b}"/><ellipse cx="58" cy="72" rx="16" ry="22" fill="${P.h}" opacity=".55"/><path d="M34 64Q22 80 38 96Q40 78 44 66Z" fill="${P.w}"/><circle cx="58" cy="30" r="20" fill="${P.b}"/><path d="M50 12Q58 2 66 12Q58 8 50 12Z" fill="${P.w}"/><circle cx="52" cy="28" r="6.5" fill="#fff"/><circle cx="53" cy="28" r="3.6" fill="${dk}"/><circle cx="54" cy="27" r="1.2" fill="#fff"/><path d="M66 26Q86 28 82 42Q76 46 70 40Q66 36 66 32Z" fill="#f6a94a" stroke="#d98a2c" stroke-width="1.6"/><circle cx="48" cy="38" r="4" fill="#ffb3c4" opacity=".7"/><path d="M26 100H84" stroke="#b98a5a" stroke-width="5" stroke-linecap="round"/><path d="M46 96L44 102M56 96L58 102" stroke="#e8a85a" stroke-width="3" stroke-linecap="round"/></svg>`;
 }
 
 /* ===== 6. ДАННЫЕ: ПРЕДМЕТЫ, РЕЦЕПТЫ, ЗАДАНИЯ, ДОСТИЖЕНИЯ ===== */
@@ -420,7 +429,13 @@ reg([
  ['acc_hat','Шляпка','🎩',45,{pet:'acc',dpos:'head'}],['acc_glasses','Очки','🕶️',50,{pet:'acc',dpos:'face'}]
 ],'pet','pet');
 reg([
- ['phone','Телефон','📱',350,{tech:1}],['laptop','Ноутбук','💻',800,{tech:1}],['tv','Телевизор','📺',500,{tech:1,place:1}],
+ ['birdcage','Клетка','🏠',120,{place:1,desc:'Дом для попугая'}],
+ ['birdfood','Корм для попугая','🌾',12,{animal:'food',desc:'Зерновая смесь'}],
+ ['birddrink','Поилка','💧',45,{animal:'drink',desc:'Чистая вода каждый день'}],
+ ['birdchalk','Мел','🪨',15,{animal:'chalk',desc:'Минеральный мел для клюва'}]
+],'animals','animals');
+reg([
+ ['phone','Телефон','Телефон','📱',350,{tech:1}],['laptop','Ноутбук','💻',800,{tech:1}],['tv','Телевизор','📺',500,{tech:1,place:1}],
  ['tablet','Планшет','📲',450,{tech:1}],['console','Игровая приставка','🎮',400,{tech:1}],['headphones','Наушники','🎧',120,{tech:1}],
  ['camera','Фотоаппарат','📷',300,{tech:1}],['speaker','Колонка','🔊',150,{tech:1}]
 ],'tech','tech');
@@ -459,12 +474,12 @@ const HOMES=[
  {id:'house',name:'Домик с садом',e:'🏡',price:14000,bonus:60}
 ];
 const SHOP_CATS=[
- {id:'food',n:'Продукты',e:'🛒'},{id:'pet',n:'Для собаки',e:'🐕'},{id:'tech',n:'Техника',e:'📱'},
+ {id:'food',n:'Продукты',e:'🛒'},{id:'pet',n:'Для собаки',e:'🐕'},{id:'animals',n:'Животные',e:'🦜'},{id:'tech',n:'Техника',e:'📱'},
  {id:'cloth',n:'Одежда',e:'👗'},{id:'home',n:'Дом',e:'🏠'},{id:'gift',n:'Подарки',e:'🎁'},{id:'boost',n:'Усилители',e:'⚡'}
 ];
 const INV_CATS=[
  {id:'food',n:'Продукты',e:'🥕'},{id:'cloth',n:'Одежда',e:'👚'},{id:'furn',n:'Мебель',e:'🛋️'},{id:'tech',n:'Техника',e:'💻'},
- {id:'pet',n:'Собака',e:'🐾'},{id:'gift',n:'Подарки',e:'🎁'},{id:'decor',n:'Декор',e:'🪴'},{id:'boost',n:'Усилители',e:'⚡'}
+ {id:'pet',n:'Собака',e:'🐾'},{id:'animals',n:'Животные',e:'🦜'},{id:'gift',n:'Подарки',e:'🎁'},{id:'decor',n:'Декор',e:'🪴'},{id:'boost',n:'Усилители',e:'⚡'}
 ];
 const RECIPES=[
  {id:'pasta',n:'Макароны с курицей',e:'🍝',need:{pasta:1,chicken:1,butter:1},mood:14,love:3},
@@ -862,6 +877,7 @@ const FURN={
  lights:{s:[2,1],d:`<path d="M6 14Q50 58 100 30Q150 6 194 44" stroke="#8a5a3c" stroke-width="2.5" fill="none"/><g><circle cx="26" cy="38" r="8" fill="#ffd36b"/><circle cx="54" cy="52" r="8" fill="#ff9fb8"/><circle cx="84" cy="42" r="8" fill="#9fd8ff"/><circle cx="116" cy="30" r="8" fill="#b9f0a0"/><circle cx="146" cy="30" r="8" fill="#ffd36b"/><circle cx="174" cy="44" r="8" fill="#ff9fb8"/></g><g fill="#fff" opacity=".7"><circle cx="23" cy="35" r="2.5"/><circle cx="51" cy="49" r="2.5"/><circle cx="81" cy="39" r="2.5"/><circle cx="113" cy="27" r="2.5"/><circle cx="143" cy="27" r="2.5"/><circle cx="171" cy="41" r="2.5"/></g>`},
  balloon:{s:[1,1],d:`<ellipse cx="50" cy="36" rx="22" ry="27" fill="#f68fae" stroke="#e0708f" stroke-width="2"/><path d="M46 62L50 68L54 62Z" fill="#e0708f"/><path d="M50 68Q44 78 52 86Q56 92 50 98" stroke="#8a7a82" stroke-width="2" fill="none"/><ellipse cx="42" cy="26" rx="5" ry="9" fill="#fff" opacity=".45" transform="rotate(20 42 26)"/>`},
  vase:{s:[1,1],d:`${sh(100,100,92)}<g stroke="#6a4a2d" stroke-width="3" stroke-linecap="round" fill="none"><path d="M46 44Q38 24 30 16M50 44V10M54 44Q62 24 72 18"/></g><g fill="#ffb3c8"><circle cx="30" cy="14" r="6"/><circle cx="50" cy="8" r="6"/><circle cx="72" cy="16" r="6"/></g><path d="M38 42H62Q70 54 66 70Q64 90 50 90Q36 90 34 70Q30 54 38 42Z" fill="#7fb8e8" stroke="#5a98c8" stroke-width="2"/><path d="M40 52Q38 66 42 78" stroke="rgba(255,255,255,.6)" stroke-width="4" fill="none" stroke-linecap="round"/>`},
+ birdcage:{s:[1,1],d:`${sh(100,100,92)}<ellipse cx="50" cy="86" rx="32" ry="6" fill="#d9b36a"/><path d="M20 84V44Q20 14 50 14Q80 14 80 44V84Z" fill="#fff8e6" opacity=".55" stroke="#d9a83c" stroke-width="3"/><g stroke="#d9a83c" stroke-width="2"><path d="M32 22V84M42 16V84M50 14V84M58 16V84M68 22V84"/></g><path d="M24 62H76" stroke="#b98a3a" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="10" r="5" fill="none" stroke="#d9a83c" stroke-width="3"/><ellipse cx="50" cy="88" rx="34" ry="6" fill="#e8c070" stroke="#d9a83c" stroke-width="2"/>`},
  bowl:{s:[1,1],d:`${sh(100,100,84)}<path d="M20 52H80L72 78Q50 86 28 78Z" fill="#ef7fa0" stroke="#d9567a" stroke-width="2"/><ellipse cx="50" cy="52" rx="30" ry="8" fill="#f9b4c6" stroke="#d9567a" stroke-width="1.5"/><g fill="#b07a4c"><circle cx="38" cy="50" r="4"/><circle cx="50" cy="47" r="4"/><circle cx="62" cy="50" r="4"/><circle cx="44" cy="53" r="3"/><circle cx="56" cy="53" r="3"/></g><g fill="#fff" opacity=".8"><circle cx="50" cy="68" r="4"/><circle cx="43" cy="63" r="2"/><circle cx="50" cy="62" r="2"/><circle cx="57" cy="63" r="2"/></g>`},
  dogbed:{s:[1,1],d:`${sh(100,100,86)}<ellipse cx="50" cy="66" rx="42" ry="20" fill="#c9966a" stroke="#a87848" stroke-width="2"/><ellipse cx="50" cy="62" rx="32" ry="13" fill="#f5deb8"/><path d="M26 64Q50 70 74 64" stroke="#e8c898" stroke-width="3" fill="none"/><circle cx="42" cy="60" r="2.5" fill="#d9b888"/><circle cx="58" cy="62" r="2.5" fill="#d9b888"/>`}
 };
@@ -942,7 +958,7 @@ R.game=function(n){
   const b=$('#board');
   b.addEventListener('pointerdown',onDown);b.addEventListener('pointermove',onMove);
   b.addEventListener('pointerup',onUp);b.addEventListener('pointercancel',()=>{ptr=null});
-  if(!S.tipM3){S.tipM3=true;save();modal(`<h3>Как играть 🍓</h3><p>Меняй соседние фрукты местами (свайп или два тапа) и собирай 3 и больше в ряд.</p><p>• 4 в ряд — <b>молния</b> ↔️ ↕️ (чистит линию)<br>• Т или Г-образная фигура — <b>бомба</b> 💣<br>• 5 в ряд — <b>радуга</b> 🌈 (убирает цвет)<br>• Поменяй два бонуса местами — получится комбо!</p><p class="muted">Слева вверху — цели уровня. Усилители внизу помогут, если что-то не получается.</p><div class="mbtns"><button class="btn" data-a="closeModal">Играем!</button></div>`)}
+  if(!S.tipM3){S.tipM3=true;save();modal(`<h3>Как играть 🍓</h3><p>Меняй соседние фрукты местами (свайп или два тапа) и собирай 3 и больше в ряд.</p><p>• 4 в ряд — <b>молния</b> ↔️ ↕️ (чистит линию)<br>• Т или Г-образная фигура — <b>бомба</b> 💣<br>• 5 в ряд — <b>радуга</b> 🌈 (убирает цвет)<br>• Поменяй два бонуса местами — получится комбо!</p><p class="muted">Слева вверху — цели уровня: фрукты (собрать N штук), 💗 сердечки (очистить розовые клетки под фруктами), ⭐ очки и ⚡ бонусы. Подробнее — в меню «Как играть».</p><p class="muted"> Усилители внизу помогут, если что-то не получается.</p><div class="mbtns"><button class="btn" data-a="closeModal">Играем!</button></div>`)}
 };
 function layoutBoard(){
   const b=$('#board');if(!b||!G.L)return;
@@ -1170,15 +1186,14 @@ R.menu=function(){
     ${T('house','house','Наш дом')}${T('shop','shop','Магазин')}${T('inv','bag','Инвентарь')}
     ${T('tasks','tasks','Задания'+(di.can?' 🎁':''))}${T('ach','trophy','Достижения')}${T('settings','gear','Настройки')}
     ${T('cook','pan','Готовить')}${T('clean','bucket','Уборка')}${T('rel','hearts','Мы вдвоём')}
-    ${T('pet','paw','Собака')}${T('','save','Сохранить','saveNow')}${T('','help','Как играть','help')}
+    ${T('pet','paw','Собака')}<button class="tile-b" data-a="go" data-s="bird"><span style="font-size:34px;line-height:40px">🦜</span>Попугай</button>${T('','save','Сохранить','saveNow')}${T('','help','Как играть','help')}
   </div>`);
 };
 A.go=d=>go(d.s);
 A.play=()=>{UI.mapWorld=worldOf(Math.min(S.level,500));go('map')};
 A.cont=()=>startLevel(Math.min(S.level,500));
 A.saveNow=async()=>{const ok=await doSave();toast(ok?'Игра сохранена 💾':'⚠️ Не удалось сохранить — сделай экспорт в настройках')};
-A.help=()=>modal(`<h3>Как играть ❓</h3><p>🎮 <b>Match-3</b>: проходи уровни на карте. За день можно пройти до 20 <i>новых</i> уровней (повторы не считаются).</p><p>🌙 После победы Мишель и Диана идут спать, а собака — на лежанку.</p><p>🏡 В доме покупай и расставляй мебель, убирайся (мини-игры), готовь и заботься о собаке.</p><p>📝 Поручай Диане дела — она старается, но не всегда идеально.</p><p>💞 Проводи время вместе — растут отношения и открываются события.</p><div class="mbtns"><button class="btn" data-a="closeModal">Ясно</button></div>`);
-A.petIcon=()=>{if(S.pet)go('pet');else{UI.shopTab='pet';go('shop')}};
+A.help=()=>modal(`<h3>Как играть ❓</h3><p>🎮 <b>Match-3</b>: проходи уровни на карте. За день можно пройти до 20 <i>новых</i> уровней (повторы не считаются).</p><h4 style="margin:10px 0 4px">🎯 Цели уровня (слева вверху)</h4><p>• ${fruitSvg(0,22)}${fruitSvg(1,22)}${fruitSvg(3,22)} <b>Фрукты и число</b> — нужно собрать столько таких фруктов. Составляй из них ряды по 3 и больше; число уменьшается с каждым собранным. Фрукты сносят и бонусы (молния, бомба, радуга).</p><p>• 💗 <b>Сердечко</b> — розовые клетки под фруктами. Чтобы их очистить, убери фрукт, который лежит на такой клетке: собери его в ряд или задень бонусом. Светлая клетка очищается за один раз, тёмная — за два. Число рядом — сколько раз ещё нужно очистить. Когда станет 0 — уровень пройден.</p><p>• ⭐ <b>Звёздочка</b> — набери столько очков. Очки дают любые собранные фрукты: чем длиннее цепочки и больше бонусов, тем больше очков.</p><p>• ⚡ <b>Молния</b> — задействуй нужное число бонусов: собери 4 в ряд или Т/Г-фигуру, а потом убери получившийся бонус.</p><p>• ✓ Галочка вместо числа — эта цель уже выполнена. Нужно выполнить все цели до конца ходов.</p><p>🌙 После победы Мишель и Диана идут спать, а собака — на лежанку.</p><p>🏡 В доме покупай и расставляй мебель, убирайся (мини-игры), готовь и заботься о собаке и попугае.</p><p>📝 Поручай Диане дела — она старается, но не всегда идеально.</p><p>💞 Проводи время вместе — растут отношения и открываются события.</p><div class="mbtns"><button class="btn" data-a="closeModal">Ясно</button></div>`);A.petIcon=()=>{if(S.pet)go('pet');else{UI.shopTab='pet';go('shop')}};
 
 /* ---- Ежедневная награда ---- */
 function dailyInfo(){
@@ -1222,16 +1237,17 @@ A.mapBack=()=>{UI.stack=[];go('menu',null,true)};
 A.lvl=d=>startLevel(+d.n);
 
 /* ---- Магазин ---- */
-const isUnique=i=>i.inv==='cloth'||(i.tech&&!i.place)||i.pet==='acc';
+const isUnique=i=>i.inv==='cloth'||(i.tech&&!i.place)||i.pet==='acc'||i.animal==='drink';
 R.shop=function(){
   const sc=$('#screen').scrollTop,cat=UI.shopTab;
   let h=hdr('Магазин 🛍️')+`<div class="tabs">${SHOP_CATS.map(c=>`<button class="tab ${c.id===cat?'on':''}" data-a="shopTab" data-t="${c.id}">${c.e} ${c.n}</button>`).join('')}</div>`;
   if(cat==='pet'&&!S.pet)h+=`<div class="card row"><div style="font-size:44px">🐶</div><div class="sp"><b>Завести собаку</b><div class="muted">Выбери пол, имя, породу и внешний вид</div></div><button class="btn sm" data-a="petWiz">250 🪙</button></div>`;
+  if(cat==='animals'&&!S.bird)h+=`<div class="card row"><div style="font-size:44px">🦜</div><div class="sp"><b>Попугай</b><div class="muted">Нужна клетка: сначала купи её ниже</div></div><button class="btn sm" data-a="birdWiz">200 🪙</button></div>`;
   if(cat==='home')h+=HOMES.map(x=>`<div class="card row"><div style="font-size:40px">${x.e}</div><div class="sp"><b>${x.name}</b><div class="muted">Бонус к ежедневной награде: +${x.bonus} 🪙</div></div>${S.home===x.id?'<span class="chip">Живём тут</span>':S.homes.includes(x.id)?`<button class="btn sm sec" data-a="buyHome" data-id="${x.id}">Заселиться</button>`:`<button class="btn sm" data-a="buyHome" data-id="${x.id}">${x.price} 🪙</button>`}</div>`).join('');
   const list=Object.values(ITEMS).filter(i=>i.shop===cat);
   h+=`<div class="grid">`+list.map(i=>{
     const own=have(i.id),u=isUnique(i)&&own>0;
-    const multi=(i.shop==='food'||i.pet==='food'||i.pet==='treat'||i.boost);
+    const multi=(i.shop==='food'||i.pet==='food'||i.pet==='treat'||i.animal==='food'||i.animal==='chalk'||i.boost);
     return `<div class="item"><div class="art">${FURN[i.id]?furnSvg(i.id,64):`<div class="em">${i.e}</div>`}</div><div class="nm">${i.name}</div>${own?`<div class="cnt">×${own}</div>`:''}<div class="muted">${i.desc||''}</div>
     <button class="btn sm block ${u?'off':''}" data-a="buy" data-id="${i.id}">${u?'Есть ✓':i.price+' 🪙'}</button>
     ${multi?`<button class="btn sm sec block" style="margin-top:6px" data-a="buy" data-id="${i.id}" data-n="5">×5 · ${i.price*5}</button>`:''}</div>`}).join('')+`</div>`;
@@ -1265,6 +1281,9 @@ R.inv=function(){
     if(i.slot){const wm=S.wear.m[i.slot]===i.id,wd=S.wear.d[i.slot]===i.id;
       b=`<button class="btn sm ${wm?'':'sec'}" data-a="wear" data-id="${i.id}" data-w="m">${wm?'✓ ':''}Мишель</button><button class="btn sm ${wd?'':'sec'}" data-a="wear" data-id="${i.id}" data-w="d">${wd?'✓ ':''}Диана</button>`;sub='Надеть на героиню'}
     if(i.tech)b+=`<button class="btn sm sec" data-a="useTech" data-id="${i.id}">▶ Использовать</button>`;
+    if(i.animal==='food')b=`<button class="btn sm" data-a="bFeed">🌾 Покормить попугая</button>`;
+    if(i.animal==='drink')b=`<button class="btn sm" data-a="bWater">💧 Налить воды</button>`;
+    if(i.animal==='chalk')b=`<button class="btn sm" data-a="bChalk">🪨 Дать мел</button>`;
     if(i.pet==='food')b=`<button class="btn sm" data-a="pFeed">🍖 Покормить</button>`;
     if(i.pet==='treat')b=`<button class="btn sm" data-a="pTreat">🦴 Дать</button>`;
     if(i.pet==='toy')b=`<button class="btn sm" data-a="pPlay" data-id="${i.id}">🎾 Играть</button>`;
@@ -1485,7 +1504,7 @@ A.fact=d=>{
 };
 
 /* ---- Собака ---- */
-const WIZ_BREEDS=['corgi','spitz','golden','mutt','shiba','husky','pug','dalm'];
+const WIZ_BREEDS=['corgi','spitz','golden','mutt','shiba','husky','pug','chihuahua','dalm'];
 A.petWiz=()=>{
   if(S.pet){toast('Собака уже живёт у вас 🐶');return}
   if(!UI.pw)UI.pw={sex:'m',name:'',breed:'corgi',variant:0,collar:0};
@@ -1512,7 +1531,7 @@ A.petBuy=()=>{
   burst(['🐶','🐾','💗'],16);Snd.fx('win');
   modal(`<h3>Ура! ${esc(name)} дома! 🎉</h3><div class="center">${dogSvg(S.pet,'sit',150)}</div><p class="center">${w.sex==='m'?'Он':'Она'} уже обнюхивает все углы. Не забудь купить корм, миску и лежанку!</p><div class="mbtns"><button class="btn" data-a="petOk">Спасибо!</button></div>`);
 };
-A.petOk=()=>{closeModal();if(UI.screen==='shop')R.shop();else if(UI.screen==='pet')R.pet()};
+A.petOk=()=>{closeModal();if(UI.screen==='shop')R.shop();else if(UI.screen==='pet')R.pet();else if(UI.screen==='bird')R.bird()};
 const petAvg=()=>S.pet?(S.pet.hunger+S.pet.happy+S.pet.energy+S.pet.clean)/4:0;
 R.pet=function(){
   if(!S.pet){setScreen(hdr('Собака 🐶')+`<div class="card center"><div style="font-size:64px">🐾</div><p>У вас пока нет собаки. Хотите завести?</p><button class="btn" data-a="petWiz">Выбрать друга · 250 🪙</button></div>`);return}
@@ -1537,6 +1556,40 @@ A.pAccMenu=()=>{
   const accs=Object.keys(S.inv).filter(id=>ITEMS[id]&&ITEMS[id].pet==='acc'&&S.inv[id]>0);
   modal(`<h3>Аксессуары 🎀</h3>${accs.length?accs.map(id=>`<div class="row" style="margin:8px 0"><span style="font-size:30px">${ITEMS[id].e}</span><b class="sp">${ITEMS[id].name}</b><button class="btn sm ${S.pet.acc===id?'sec':''}" data-a="pAcc" data-id="${id}">${S.pet.acc===id?'Снять':'Надеть'}</button></div>`).join(''):'<p class="center muted">Пока нет аксессуаров — загляни в магазин!</p>'}<div class="mbtns"><button class="btn" data-a="closeModal">Закрыть</button></div>`);
 };
+/* ---- Попугай ---- */
+A.birdWiz=()=>{
+  if(S.bird){toast('Попугай уже живёт у вас 🦜');return}
+  if(!have('birdcage')){toast('Сначала купи клетку 🏠');return}
+  if(S.coins<200){toast('Не хватает монет 🪙');return}
+  UI.bw={color:0,name:''};
+  modal(`<h3>Новый попугай 🦜</h3><p style="margin:6px 0"><b>Имя</b></p><input class="in" id="bName" maxlength="14" placeholder="Например, Кеша"><p style="margin:10px 0 4px"><b>Цвет</b></p><div class="ing" id="bCols" style="justify-content:flex-start">${PARROTS.map((p,i)=>`<button style="font-size:13px;font-weight:800;padding:0 10px;${i===0?'border-color:#ef8fab;background:#fff0f4':''}" data-a="bCol" data-v="${i}">${p.n}</button>`).join('')}</div><div class="center" id="bPrev">${birdSvg({color:0},110)}</div><div class="mbtns"><button class="btn sec" data-a="closeModal">Отмена</button><button class="btn" data-a="birdBuy">Купить · 200 🪙</button></div>`);
+};
+A.bCol=d=>{UI.bw.color=+d.v;const n=$('#bName');if(n)UI.bw.name=n.value;
+  const bc=$('#bCols');if(bc)[...bc.children].forEach((b,i)=>{b.style.borderColor=i===UI.bw.color?'#ef8fab':'';b.style.background=i===UI.bw.color?'#fff0f4':''});
+  const pv=$('#bPrev');if(pv)pv.innerHTML=birdSvg({color:UI.bw.color},110)};
+A.birdBuy=()=>{
+  const name=(($('#bName').value||'').trim()||'Кеша').slice(0,14);
+  if(S.bird||!spend(200))return;
+  S.bird={name,color:UI.bw.color,hunger:70,water:70,beak:60,happy:80};S.stats.buys++;
+  save();closeModal();burst(['🦜','✨','💗'],12);
+  modal(`<h3>Ура! ${esc(name)} дома! 🎉</h3><div class="center">${birdSvg(S.bird,130)}</div><p class="center">Не забудь про корм, поилку и мел. Клетку можно поставить в комнате.</p><div class="mbtns"><button class="btn" data-a="petOk">Спасибо!</button></div>`);
+};
+R.bird=function(){
+  if(!S.bird){setScreen(hdr('Попугай 🦜')+`<div class="card center"><div style="font-size:64px">🦜</div><p>У вас пока нет попугая. В магазине, в разделе «Животные», можно купить клетку, корм, поилку, мел и самого попугая.</p><button class="btn" data-a="shopAnimals">В магазин</button></div>`);return}
+  const b=S.bird,avg=(b.hunger+b.water+b.beak+b.happy)/4,face=avg>=75?'😊 Весёлый':avg>=50?'🙂 Всё хорошо':'😌 Хочется заботы';
+  const bar=(l,v)=>`<div class="stat"><div class="lb"><span>${l}</span><span>${Math.round(v)}</span></div><div class="bar"><i style="width:${v}%"></i></div></div>`;
+  setScreen(hdr(esc(b.name)+' 🦜')+`<div class="card center">${birdSvg(b,150)}<h3>${esc(b.name)}</h3><div class="muted">${PARROTS[b.color||0].n} попугай · ${face}</div>
+  ${bar('🌾 Сытость',b.hunger)}${bar('💧 Вода',b.water)}${bar('🪨 Клюв (мел)',b.beak)}${bar('💗 Настроение',b.happy)}</div>
+  <div class="grid"><button class="tile-b" data-a="bFeed"><span>🌾</span>Покормить</button><button class="tile-b" data-a="bWater"><span>💧</span>Налить воду</button>
+  <button class="tile-b" data-a="bChalk"><span>🪨</span>Дать мел</button><button class="tile-b" data-a="bTalk"><span>💬</span>Поболтать</button></div>
+  <div class="center muted" style="padding:10px 20px">Поилку нужно иметь в доме, а воду менять каждый день 💕</div>`);
+};
+A.shopAnimals=()=>{UI.shopTab='animals';go('shop')};
+const birdUp=()=>{save();if(UI.screen==='bird')R.bird();if(UI.screen==='inv')R.inv()};
+A.bFeed=()=>{if(!S.bird)return toast('Сначала заведите попугая 🦜');if(!useItem('birdfood'))return toast('Нет корма — купи в магазине 🌾');S.bird.hunger=clamp(S.bird.hunger+35,0,100);S.bird.happy=clamp(S.bird.happy+4,0,100);petSay(S.bird.name+' клюёт зёрнышки 🌾');birdUp()};
+A.bWater=()=>{if(!S.bird)return toast('Сначала заведите попугая 🦜');if(!have('birddrink'))return toast('Нужна поилка — купи в магазине 💧');S.bird.water=100;S.bird.happy=clamp(S.bird.happy+3,0,100);petSay(S.bird.name+' пьёт свежую воду 💧');birdUp()};
+A.bChalk=()=>{if(!S.bird)return toast('Сначала заведите попугая 🦜');if(!useItem('birdchalk'))return toast('Нет мела — купи в магазине 🪨');S.bird.beak=clamp(S.bird.beak+40,0,100);S.bird.happy=clamp(S.bird.happy+4,0,100);petSay(S.bird.name+' точит клюв о мел 🪨');birdUp()};
+A.bTalk=()=>{if(!S.bird)return toast('Сначала заведите попугая 🦜');S.bird.happy=clamp(S.bird.happy+8,0,100);petSay(S.bird.name+' говорит: «'+pick(['Привет, Мишель!','Привет, Диана!','Кто тут молодец?','Пора ужинать!','Люблю вас!'])+'»');birdUp()};
 A.pWalk=()=>{
   if(!S.pet)return toast('Сначала заведите собаку 🐶');
   rollDay();if(S.stats.walksDay>=3)return toast(S.pet.name+' устал(а) после прогулок. Завтра погуляем ещё! 🌙');
