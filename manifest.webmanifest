@@ -1,0 +1,17 @@
+{
+  "name": "Психички",
+  "short_name": "Психички",
+  "description": "Уютная игра про Мишель и Диану: три в ряд, дом, собака, уборка и готовка.",
+  "lang": "ru",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fde7ee",
+  "theme_color": "#fde7ee",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
