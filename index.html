@@ -1689,6 +1689,7 @@ A.secret=()=>{
 };
 A.secCheck=()=>{
   const v=($('#secCode').value||'').trim().toLowerCase();
+  if(v==='попрошайка'){S.dailyDone=0;save();closeModal();toast('Ещё 20 уровней открыто ✨');if(typeof renderTop==='function')renderTop();return}
   if(v!=='капибара'){toast('Неверный код');const i=$('#secCode');if(i){i.style.animation='shake .3s'}return}
   UI.secOk=true;
   modal(`<h3>🪙 Начислить монеты</h3><input class="in" id="secAmt" type="number" inputmode="numeric" min="1" max="1000000" placeholder="Например, 150" value="150"><div class="mbtns"><button class="btn sec" data-a="closeModal">Отмена</button><button class="btn gold" data-a="secGive">Начислить</button></div>`);
@@ -1915,7 +1916,4 @@ setTimeout(()=>{if(!booted)boot()},3000);
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){
   window.addEventListener('load',()=>{try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}});
 }
-
-</script>
-</body>
-</html>
+</script></body></html>
